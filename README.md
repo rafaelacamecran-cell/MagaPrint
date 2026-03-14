@@ -54,4 +54,4 @@ O **MagaPrint** é uma solução centralizada para gestão de ativos de TI, moni
 - [Instruções Docker Detalhadas](README_DOCKER.md)
 
 ---
-**Desenvolvido por T.I Logística - Magalu**
+**Desenvolvido por T.I Rafaela Camecran - Magalu**
