@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Meus Ativos - MagaLabs{% endblock %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h2 style="color: #333; margin: 0;"><i class="fas fa-user-tag"></i> Meus Dispositivos Atribuídos</h2>
+        <a href="{{ url_for('solicitar') }}" class="btn-custom" style="background: #0d7ee7; border: none;">
+            <i class="fas fa-plus"></i> Abrir Chamado
+        </a>
+    </div>
+
+    <div class="glass-card" style="padding: 0; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="background: #fdfdfd; color: #888; font-size: 0.85rem; text-transform: uppercase;">
+                    <th style="padding: 15px 20px; border-bottom: 1px solid #eee;">Dispositivo</th>
+                    <th style="padding: 15px 20px; border-bottom: 1px solid #eee;">Tipo</th>
+                    <th style="padding: 15px 20px; border-bottom: 1px solid #eee;">Data Retirada</th>
+                    <th style="padding: 15px 20px; border-bottom: 1px solid #eee; text-align: right;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for device in devices %}
+                <tr style="border-bottom: 1px solid #f9f9f9;">
+                    <td style="padding: 15px 20px;"><strong>{{ device.name }}</strong></td>
+                    <td style="padding: 15px 20px;">{{ device.device_type }}</td>
+                    <td style="padding: 15px 20px;">{{ device.assigned_at.strftime('%d/%m/%Y %H:%M') if
+                        device.assigned_at else '-' }}</td>
+                    <td style="padding: 15px 20px; text-align: right;">
+                        <form action="{{ url_for('main.device_return', device_id=device.id) }}" method="POST"
+                            style="display: inline;">
+                            <button type="submit" class="btn-custom"
+                                style="font-size: 0.8rem; background: #e74c3c; border: none; padding: 5px 15px;">
+                                Devolver
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="padding: 40px; text-align: center; color: #999;">Você não possui nenhum
+                        dispositivo atribuído no momento.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

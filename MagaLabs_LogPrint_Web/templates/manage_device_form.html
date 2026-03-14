@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Editar' if device else 'Novo' }} Dispositivo - MagaLabs{% endblock %}
+
+{% block content %}
+<div class="glass-card manage-device-card">
+    <h2 class="form-title">
+        <i class="fas fa-desktop"></i> {{ 'Editar' if device else 'Cadastrar Novo' }} Dispositivo
+    </h2>
+
+    <form method="POST">
+        <div class="form-group">
+            <label for="name">Nome / Identificação do Ativo</label>
+            <input type="text" id="name" name="name" class="form-control form-control-custom"
+                value="{{ device.name if device else '' }}" required placeholder="Ex: Tablet Motorola - CD 05">
+        </div>
+
+        <div class="form-group">
+            <label for="device_type">Tipo de Equipamento</label>
+            <select id="device_type" name="device_type" class="form-control form-control-custom" required>
+                <option value="Tablet" {{ 'selected' if device and device.device_type=='Tablet' }}>Tablet</option>
+                <option value="Smartphone" {{ 'selected' if device and device.device_type=='Smartphone' }}>Smartphone
+                </option>
+                <option value="Coletor" {{ 'selected' if device and device.device_type=='Coletor' }}>Coletor de Dados
+                </option>
+                <option value="Notebook" {{ 'selected' if device and device.device_type=='Notebook' }}>Notebook</option>
+                <option value="Outro" {{ 'selected' if device and device.device_type=='Outro' }}>Outro</option>
+            </select>
+        </div>
+
+        <div class="form-group form-group-spaced">
+            <label for="serial_number">Número de Serial / IMEI</label>
+            <input type="text" id="serial_number" name="serial_number" class="form-control form-control-custom"
+                value="{{ device.serial_number if device else '' }}" placeholder="Opcional">
+        </div>
+
+        <div class="button-group">
+            <button type="submit" class="btn-custom btn-primary-form">
+                {{ 'Salvar Alterações' if device else 'Cadastrar Equipamento' }}
+            </button>
+            <a href="{{ url_for('main.manage_devices_page') }}" class="btn-custom btn-secondary-form">
+                Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,6 @@
+FileSystem encoding: utf-8
+
+--- Scanning Environment Variables for 0xe3 ---
+No 0xe3 found in environment variables.
+
+--- Testing SQLAlchemy engine connection with CLEAN ENV (?) ---

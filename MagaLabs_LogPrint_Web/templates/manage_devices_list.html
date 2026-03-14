@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Inventário de Ativos{% endblock %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <h2 style="color: #333; margin: 0;"><i class="fas fa-boxes"></i> Inventário de Ativos</h2>
+        <a href="{{ url_for('main.create_device') }}" class="btn-custom" style="background: #27ae60; border: none;">
+            <i class="fas fa-plus"></i> Novo Item
+        </a>
+    </div>
+
+    <div class="glass-card" style="padding: 0; overflow: hidden;">
+        <div style="padding: 15px 20px; background: #f8f9fa; border-bottom: 1px solid #eee;">
+            <form action="{{ url_for('main.manage_devices_page') }}" method="GET" style="display: flex; gap: 10px;">
+                <input type="text" name="search" placeholder="Filtrar por nome ou serial..." value="{{ search_term }}"
+                    style="padding: 8px 15px; border: 1px solid #ddd; border-radius: 20px; flex-grow: 1;">
+                <button type="submit" class="btn-custom" style="padding: 8px 20px; font-size: 0.9rem;">Filtrar</button>
+            </form>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #fdfdfd; color: #888; font-size: 0.85rem; text-transform: uppercase;">
+                    <th style="padding: 15px 20px; border-bottom: 1px solid #eee; text-align: left;">ID / Ativo</th>
+                    <th style="padding: 15px 20px; border-bottom: 1px solid #eee; text-align: left;">Tipo</th>
+                    <th style="padding: 15px 20px; border-bottom: 1px solid #eee; text-align: left;">Serial</th>
+                    <th style="padding: 15px 20px; border-bottom: 1px solid #eee; text-align: left;">Status</th>
+                    <th style="padding: 15px 20px; border-bottom: 1px solid #eee; text-align: right;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for device in devices %}
+                <tr style="border-bottom: 1px solid #f9f9f9;">
+                    <td style="padding: 15px 20px;"><strong>{{ device.name }}</strong></td>
+                    <td style="padding: 15px 20px;">{{ device.device_type }}</td>
+                    <td style="padding: 15px 20px;"><code>{{ device.serial_number or '-' }}</code></td>
+                    <td style="padding: 15px 20px;">{{ device.status }}</td>
+                    <td style="padding: 15px 20px; text-align: right;">
+                        <a href="{{ url_for('main.edit_device', id=device.id) }}"
+                            style="color: #0d7ee7; margin-left: 10px;"><i class="fas fa-edit"></i></a>
+                        <form action="{{ url_for('main.delete_device', id=device.id) }}" method="POST"
+                            style="display: inline;" onsubmit="return confirm('Excluir este ativo permanentemente?')">
+                            <button type="submit"
+                                style="background: none; border: none; color: #e74c3c; cursor: pointer; margin-left: 10px;"><i
+                                    class="fas fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginação simplificada -->
+    {% if pagination.pages > 1 %}
+    <style>
+        .page-link {
+            padding: 5px 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            text-decoration: none;
+            background: #fff;
+            color: #333;
+            transition: all 0.2s;
+        }
+
+        .page-link.active {
+            background: #0d7ee7;
+            color: #fff;
+            border-color: #0d7ee7;
+        }
+
+        .page-link:hover:not(.active) {
+            background: #f8f9fa;
+        }
+    </style>
+    <div style="margin-top: 20px; display: flex; justify-content: center; gap: 5px;">
+        {% for p in pagination.iter_pages() %}
+        {% if p %}
+        <a href="{{ url_for('main.manage_devices_page', page=p, search=search_term) }}"
+            class="page-link {{ 'active' if p == pagination.page else '' }}">
+            {{ p }}
+        </a>
+        {% else %}
+        <span>...</span>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

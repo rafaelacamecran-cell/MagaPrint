@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Estoque Virtual - MagaLabs{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+    <div class="flex justify-between items-center mb-4 slide-up">
+        <div>
+            <h2 class="mb-1"><i class="fas fa-boxes-stacked text-primary"></i> Suprimentos</h2>
+            <p class="text-dim">Controle logístico de insumos e hardware reserva</p>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+            <a href="{{ url_for('main.export_report', report_type='inventory') }}"
+                class="btn-custom btn-nav-bot btn-success-soft">
+                <i class="fas fa-file-excel"></i> Exportar Base
+            </a>
+            <a href="{{ url_for('main.export_report', report_type='movements') }}" class="btn-custom btn-primary-soft">
+                <i class="fas fa-timeline"></i> Relatório de Fluxo
+            </a>
+            <a href="{{ url_for('main.dashboard') }}" class="btn-custom btn-back">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+
+    <div class="grid-1-2 mt-4">
+        <!-- Formulário de Entrada -->
+        <div class="glass-card slide-up delay-100 h-fit">
+            <h4 class="mb-4"><i class="fas fa-circle-plus text-primary"></i> Nova Entrada de Ativo</h4>
+            <form action="{{ url_for('main.inventory') }}" method="POST">
+                <div class="form-group">
+                    <label for="category">Categoria do Material</label>
+                    <select id="category" name="category" required>
+                        <option value="Toner">Toner (Insumo)</option>
+                        <option value="Printer">Hardware (Impressora)</option>
+                        <option value="Peripheral">Periférico (Mouse, Teclado etc)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="model">Modelo / Especificação</label>
+                    <input type="text" id="model" name="model" required placeholder="Ex: HP Pro M404dn">
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="quantity">Qtd. Inicial</label>
+                        <input type="number" id="quantity" name="quantity" required min="1" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="min_quantity">Qtd. Mínima (Safe)</label>
+                        <input type="number" id="min_quantity" name="min_quantity" required min="1" value="5">
+                    </div>
+                </div>
+                <button type="submit" class="btn-custom w-full">Registrar na Base</button>
+            </form>
+        </div>
+
+        <!-- Listas de Estoque -->
+        <div class="flex flex-col gap-4">
+            {% for cat_name, items in [('Matriz de Toners', toners), ('Hardware & Impressoras', printers), ('Periféricos
+            & Acessórios', peripherals)] %}
+            <div class="glass-card slide-up p-0-imp delay-200">
+                <div class="p-4 border-b">
+                    <h4 class="mb-0 text-bright">{{ cat_name }}</h4>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Especificação</th>
+                                <th>Contagem</th>
+                                <th>Status de Disponibilidade</th>
+                                <th class="text-right">Ações Rápidas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr id="row-{{ item.id }}">
+                                <td><span class="text-bright font-bold">{{ item.model }}</span></td>
+                                <td><span class="text-dim" id="qty-{{ item.id }}">{{ item.quantity }} un.</span></td>
+                                <td id="status-{{ item.id }}">
+                                    {% if item.quantity <= 0 %} <span class="status-badge badge-admin">Crítico:
+                                        Esgotado</span>
+                                        {% elif (item.category == 'Toner' and item.quantity < 5) %} <span
+                                            class="status-badge badge-admin">Reposição Imediata</span>
+                                            {% elif item.quantity <= item.min_quantity %} <span
+                                                class="status-badge badge-lider">Estoque Baixo</span>
+                                                {% else %}
+                                                <span class="status-badge badge-ti">Nível Seguro</span>
+                                                {% endif %}
+                                </td>
+                                <td class="text-right">
+                                    <div class="flex justify-end items-center gap-2">
+                                        <div class="stock-adjust-group">
+                                            <button type="button" class="btn-plus icon-btn-ghost"
+                                                data-id="{{ item.id }}" title="Aumentar estoque">
+                                                <i class="fas fa-plus-circle"></i>
+                                            </button>
+                                            <input type="number" id="input-{{ item.id }}" value="{{ item.quantity }}"
+                                                class="stock-input stock-input-sm text-center" data-id="{{ item.id }}"
+                                                title="Quantidade atual">
+                                            <button type="button" class="btn-minus icon-btn-ghost"
+                                                data-id="{{ item.id }}" title="Diminuir estoque">
+                                                <i class="fas fa-minus-circle"></i>
+                                            </button>
+                                        </div>
+                                        <form action="{{ url_for('main.delete_stock', id=item.id) }}" method="POST"
+                                            onsubmit="return confirm('Excluir item do inventário?')">
+                                            <button type="submit" class="icon-btn-ghost danger"
+                                                title="Excluir do inventário">
+                                                <i class="fas fa-trash-can"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center p-4 text-dim">Sem ativos catalogados nesta categoria.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Handle Plus buttons
+        document.querySelectorAll('.btn-plus').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id = this.getAttribute('data-id');
+                const input = document.getElementById(`input-${id}`);
+                const newVal = parseInt(input.value) + 1;
+                input.value = newVal;
+                updateStock(id, newVal);
+            });
+        });
+
+        // Handle Minus buttons
+        document.querySelectorAll('.btn-minus').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id = this.getAttribute('data-id');
+                const input = document.getElementById(`input-${id}`);
+                const newVal = Math.max(0, parseInt(input.value) - 1);
+                input.value = newVal;
+                updateStock(id, newVal);
+            });
+        });
+
+        // Handle Input change
+        document.querySelectorAll('.stock-input').forEach(input => {
+            input.addEventListener('change', function () {
+                const id = this.getAttribute('data-id');
+                updateStock(id, this.value);
+            });
+        });
+    });
+
+    function updateStock(id, newQty) {
+        const formData = new FormData();
+        formData.append('quantity', newQty);
+
+        fetch(`/stock/update/${id}`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById(`qty-${id}`).innerText = data.new_qty + ' un.';
+                    document.getElementById(`status-${id}`).innerHTML = data.status_html;
+                    // Efeito visual de sucesso
+                    const row = document.getElementById(`row-${id}`);
+                    row.style.background = 'rgba(0, 134, 255, 0.1)';
+                    setTimeout(() => { row.style.background = ''; }, 400);
+                }
+            })
+            .catch(err => console.error('Erro ao atualizar estoque:', err));
+    }
+</script>
+{% endblock %}

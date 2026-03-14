@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Painel T.I - MagaLabs{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+    <!-- Seção 1: Introdução -->
+    <div class="dashboard-intro slide-up">
+        <h2 class="mb-1"><i class="fas fa-microchip text-primary"></i> Suporte Infra Cds</h2>
+        <p class="text-dim">Gestão centralizada de hardware, dispositivos e ativos tecnológicos LuizaLabs.</p>
+    </div>
+
+    <!-- Alerta de Pendências de Toner -->
+    {% if pending_toner_count > 0 %}
+    <div class="glass-card slide-up mb-4 border-l-warn flex justify-between items-center p-4 bg-warn-soft">
+        <div class="flex items-center gap-4">
+            <div class="card-icon-header icon-bg-warning scale-75">
+                <i class="fas fa-exclamation-triangle text-warning"></i>
+            </div>
+            <div>
+                <h4 class="mb-0 text-bright">Pendência de Baixa Detectada</h4>
+                <p class="text-dim small">Existem <strong>{{ pending_toner_count }}</strong> trocas de toner detectadas
+                    fisicamente sem registro no sistema.</p>
+            </div>
+        </div>
+        <a href="{{ url_for('main.toner_pending_list') }}" class="btn-custom btn-logout bg-warning-btn">
+            Resolver Pendências
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Seção 2: Barra de Ações Rápidas -->
+    <div class="action-toolbar slide-up delay-100 gap-xl">
+        <a href="{{ url_for('main.ai_chat') }}" class="btn-custom btn-nav-bot">
+            <i class="fas fa-robot"></i> MagaBot Analista
+        </a>
+        <a href="{{ url_for('main.inventory') }}" class="btn-custom">
+            <i class="fas fa-boxes"></i> Estoque Virtual
+        </a>
+        <a href="{{ url_for('main.export_report', report_type='inventory') }}" class="btn-custom btn-logout">
+            <i class="fas fa-file-excel"></i> Disponibilidade
+        </a>
+        <a href="{{ url_for('main.export_report', report_type='movements') }}" class="btn-custom btn-logout">
+            <i class="fas fa-file-excel"></i> Movimentações
+        </a>
+        <a href="{{ url_for('main.toner_register') }}" class="btn-custom btn-logout btn-accent-fill">
+            <i class="fas fa-fill-drip"></i> Baixar Toner
+        </a>
+    </div>
+
+    <!-- Seção 3: Centro de Gerenciamento -->
+    <div class="management-grid slide-up delay-200">
+        <div class="glass-card feature-card">
+            <div>
+                <div class="card-icon-header">
+                    <i class="fas fa-users-cog text-primary"></i>
+                </div>
+                <h4>Administração</h4>
+                <p class="text-dim mb-4 small">Controle de acessos e permissões corporativas para toda a equipe de TI.
+                </p>
+            </div>
+            <a href="{{ url_for('main.manage_users') }}" class="btn-custom w-full btn-logout">Gerenciar Equipe</a>
+        </div>
+
+        <div class="glass-card feature-card">
+            <div>
+                <div class="card-icon-header icon-bg-success">
+                    <i class="fas fa-network-wired text-success"></i>
+                </div>
+                <h4>Status Infra</h4>
+                <p class="text-dim mb-4 small">Monitoramento em tempo real de ativos e saúde da infraestrutura de rede.
+                </p>
+            </div>
+            <a href="{{ url_for('main.infra_status') }}" class="btn-custom w-full btn-logout">Verificar Rede</a>
+        </div>
+
+        <div class="glass-card feature-card">
+            <div>
+                <div class="card-icon-header icon-bg-warning">
+                    <i class="fas fa-history text-warning"></i>
+                </div>
+                <h4>Audit Logs</h4>
+                <p class="text-dim mb-4 small">Rastreabilidade completa de todas as alterações realizadas no
+                    ecossistema.</p>
+            </div>
+            <a href="{{ url_for('main.global_history') }}" class="btn-custom w-full btn-logout">Logs Globais</a>
+        </div>
+    </div>
+
+    <!-- Seção 4: Hub de Dados -->
+    <div class="glass-card slide-up delay-200">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="mb-0">Inventário de Dispositivos</h3>
+            <form action="{{ url_for('main.dashboard') }}" method="GET" class="flex gap-2">
+                <div class="search-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" name="search" class="search-input w-350"
+                        placeholder="Pesquisar por Nome, SN ou Tipo..." value="{{ search_term }}">
+                </div>
+            </form>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Identificação / SN</th>
+                        <th>Categoria</th>
+                        <th>Status</th>
+                        <th>Colaborador</th>
+                        <th class="text-right">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for device in devices %}
+                    <tr>
+                        <td>
+                            <div class="flex flex-col">
+                                <span class="text-bright font-bold">{{ device.name }}</span>
+                                <span class="text-dim small">SN: {{ device.serial_number or '---' }}</span>
+                            </div>
+                        </td>
+                        <td><span class="text-dim">{{ device.device_type }}</span></td>
+                        <td>
+                            {% if device.status == 'available' %}
+                            <span class="status-badge status-disponivel">Livre</span>
+                            {% elif device.status == 'in_use' %}
+                            <span class="status-badge status-em-uso">Em Uso</span>
+                            {% else %}
+                            <span class="status-badge status-em-suporte">Suporte</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ device.assigned_to_name or '<span class="text-dim opacity-50">---</span>'|safe }}</td>
+                        <td class="text-right">
+                            <div class="flex justify-end gap-2">
+                                <a href="{{ url_for('main.device_history', device_id=device.id) }}"
+                                    class="action-icon-btn" title="Histórico">
+                                    <i class="fas fa-clock-rotate-left"></i>
+                                </a>
+                                <a href="{{ url_for('main.edit_device', id=device.id) }}" class="action-icon-btn"
+                                    title="Editar">
+                                    <i class="fas fa-pencil"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center p-4 text-dim">Nenhum ativo tecnológico localizado na base de
+                            dados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

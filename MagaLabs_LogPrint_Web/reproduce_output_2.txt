@@ -1,0 +1,14 @@
+FileSystem encoding: utf-8
+CWD: 'D:\\Meus projetos\\Monitoramento de impressao 2026\\MagaLabs_LogPrint_Web'
+CWD bytes: b'D:\\Meus projetos\\Monitoramento de impressao 2026\\MagaLabs_LogPrint_Web'
+CWD filesystem bytes: b'D:\\Meus projetos\\Monitoramento de impressao 2026\\MagaLabs_LogPrint_Web'
+Script path: 'reproduce_issue.py'
+Script path bytes: b'reproduce_issue.py'
+Script path filesystem bytes: b'reproduce_issue.py'
+
+--- Testing SQLAlchemy engine connection with application_name workaround ---
+URI: postgresql://postgres:R%40f%4008049226*%23@localhost:5432/MagaLabs_LogPrint?application_name=myapp
+SQLAlchemy connection failed with workaround: 'utf-8' codec can't decode byte 0xe3 in position 111: invalid continuation byte
+
+--- Testing SQLAlchemy engine connection ORIGINAL ---
+SQLAlchemy connection failed (Original): 'utf-8' codec can't decode byte 0xe3 in position 111: invalid continuation byte

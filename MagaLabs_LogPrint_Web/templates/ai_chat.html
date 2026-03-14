@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}MagaBot - Chat de Assistência T.I{% endblock %}
+
+{% block content %}
+<style>
+    .chat-container {
+        max-width: 900px;
+        margin: 0 auto;
+        height: calc(100vh - 180px);
+        display: flex;
+        flex-direction: column;
+        background: #0a0a0c;
+        border-radius: 24px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 20px rgba(13, 126, 231, 0.1);
+        overflow: hidden;
+        animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .chat-header {
+        background: linear-gradient(90deg, #0d7ee7, #5a32a8);
+        color: white;
+        padding: 25px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .chat-messages {
+        flex-grow: 1;
+        padding: 25px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        background: radial-gradient(circle at top right, #1a1a2e, #0a0a0c);
+        background-attachment: fixed;
+    }
+
+    .message {
+        max-width: 75%;
+        padding: 14px 20px;
+        border-radius: 20px;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .message.user {
+        align-self: flex-end;
+        background: linear-gradient(135deg, #0d7ee7 0%, #0086ff 100%);
+        color: white;
+        border-bottom-right-radius: 5px;
+        box-shadow: 0 5px 15px rgba(13, 126, 231, 0.3);
+    }
+
+    .message.bot {
+        align-self: flex-start;
+        background: rgba(255, 255, 255, 0.05);
+        color: #e0e0e0;
+        border-bottom-left-radius: 5px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        margin-left: 45px;
+        /* Espaço para o avatar */
+    }
+
+    .bot-avatar-msg {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        position: absolute;
+        left: -45px;
+        bottom: 0;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: white;
+        padding: 2px;
+        object-fit: contain;
+    }
+
+    .chat-input-area {
+        padding: 25px;
+        background: #111116;
+        display: flex;
+        gap: 15px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        align-items: center;
+    }
+
+    .chat-input {
+        flex-grow: 1;
+        padding: 14px 24px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 30px;
+        color: white;
+        outline: none;
+        transition: all 0.3s;
+        font-size: 0.95rem;
+    }
+
+    .chat-input:focus {
+        background: rgba(255, 255, 255, 0.07);
+        border-color: #0d7ee7;
+        box-shadow: 0 0 15px rgba(13, 126, 231, 0.2);
+    }
+
+    .btn-send {
+        background: linear-gradient(135deg, #0d7ee7 0%, #5a32a8 100%);
+        color: white;
+        border: none;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 5px 15px rgba(13, 126, 231, 0.3);
+    }
+
+    .btn-send:hover {
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 8px 25px rgba(13, 126, 231, 0.5);
+    }
+
+    /* Scrollbar Styling */
+    .chat-messages::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .loading-dots {
+        display: flex;
+        gap: 4px;
+        padding: 10px;
+    }
+
+    .dot {
+        width: 8px;
+        height: 8px;
+        background: #ccc;
+        border-radius: 50%;
+        animation: bounce 1.4s infinite ease-in-out;
+    }
+
+    .dot:nth-child(1) {
+        animation-delay: -0.32s;
+    }
+
+    .dot:nth-child(2) {
+        animation-delay: -0.16s;
+    }
+
+    @keyframes bounce {
+
+        0%,
+        80%,
+        100% {
+            transform: scale(0);
+        }
+
+        40% {
+            transform: scale(1);
+        }
+    }
+</style>
+
+<div class="chat-container">
+    <div class="chat-header">
+        <div
+            style="width: 70px; height: 70px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 3px solid rgba(255,255,255,0.4); box-shadow: 0 4px 10px rgba(0,0,0,0.1); padding: 5px;">
+            <img src="{{ url_for('static', filename='img/bot_avatar.png') }}" alt="MagaBot"
+                style="max-width: 100%; max-height: 100%; object-fit: contain;">
+        </div>
+        <style>
+            .status-indicator {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 0.8rem;
+                opacity: 0.9;
+            }
+
+            .pulse-dot {
+                width: 8px;
+                height: 8px;
+                background-color: #2ecc71;
+                border-radius: 50%;
+                box-shadow: 0 0 0 rgba(46, 204, 113, 0.4);
+                animation: pulse-green 1.5s infinite;
+            }
+
+            @keyframes pulse-green {
+                0% {
+                    box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4);
+                }
+
+                70% {
+                    box-shadow: 0 0 0 10px rgba(46, 204, 113, 0);
+                }
+
+                100% {
+                    box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+                }
+            }
+        </style>
+        <div>
+            <h3 style="margin:0; color: white;">MagaBot Assistente</h3>
+            <div class="status-indicator">
+                <span class="pulse-dot"></span>
+                <span>Ativo</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+        <div class="message bot">
+            <img src="{{ url_for('static', filename='img/bot_avatar.png') }}" class="bot-avatar-msg">
+            Olá! Sou o MagaBot, seu assistente técnico. Como posso ajudar com os ativos da MagaLabs hoje?
+        </div>
+    </div>
+
+    <div class="chat-input-area">
+        <input type="text" id="user-input" class="chat-input"
+            placeholder="Pergunte sobre equipamentos ou peça ajuda técnica..."
+            onkeypress="if(event.key==='Enter') sendMessage()">
+        <button class="btn-send" onclick="sendMessage()">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+
+<script>
+    const chatMessages = document.getElementById('chat-messages');
+    const userInput = document.getElementById('user-input');
+
+    function addMessage(text, isUser) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+
+        let content = text;
+        if (!isUser) {
+            content = `<img src="{{ url_for('static', filename='img/bot_avatar.png') }}" class="bot-avatar-msg">${text}`;
+        }
+
+        msgDiv.innerHTML = content;
+        chatMessages.appendChild(msgDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return msgDiv;
+    }
+
+    async function sendMessage() {
+        const text = userInput.value.trim();
+        if (!text) return;
+
+        userInput.value = '';
+        addMessage(text, true);
+
+        // Mostrar loading
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'message bot';
+        loadingDiv.innerHTML = `
+            <img src="{{ url_for('static', filename='img/bot_avatar.png') }}" class="bot-avatar-msg">
+            <div class="loading-dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>`;
+        chatMessages.appendChild(loadingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        try {
+            const response = await fetch("{{ url_for('main.ai_chat') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            });
+            const data = await response.json();
+
+            chatMessages.removeChild(loadingDiv);
+            addMessage(data.response, false);
+        } catch (error) {
+            chatMessages.removeChild(loadingDiv);
+            addMessage("Desculpe, tive um problema para processar sua mensagem.", false);
+        }
+    }
+</script>
+{% endblock %}

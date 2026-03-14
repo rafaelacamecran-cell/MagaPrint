@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}Resolver Chamado{% endblock %}
+
+{% block content %}
+<div class="glass-card container-narrow">
+    <h2 class="border-bottom-magalu mb-20">
+        <i class="fas fa-tools"></i> Resolver Chamado #{{ ticket.id }}
+    </h2>
+
+    <div class="info-box-dark">
+        <h4 class="mt-0 text-blue">Detalhes da Solicitação</h4>
+        <p><strong>Chamado Zendesk:</strong>
+            <a href="{{ ticket.zendesk_id }}" target="_blank" class="text-blue text-underline">
+                Ver Chamado Oficial <i class="fas fa-external-link-alt text-small-muted"></i>
+            </a>
+        </p>
+        <p><strong>Solicitante:</strong> {{ ticket.solicitor_name }} ({{ ticket.solicitor_login }}) - {{
+            ticket.solicitor_sector }} / {{ ticket.solicitor_cd }}</p>
+        <p><strong>Problema:</strong> {{ ticket.problem_description }}</p>
+        <p><strong>Ativo:</strong> {{ ticket.asset_type }} - {{ ticket.asset_identifier }}</p>
+        <p><strong>Aberto em:</strong> {{ ticket.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+        {% if ticket.attachment_path %}
+        <p><strong>Comprovante:</strong>
+            <a href="{{ url_for('static', filename=ticket.attachment_path.replace('static/', '')) }}" target="_blank"
+                class="text-blue text-underline">
+                <i class="fas fa-image"></i> Ver Print Anexado
+            </a>
+        </p>
+        {% endif %}
+    </div>
+
+    <form action="{{ url_for('resolver', id=ticket.id) }}" method="POST">
+        <h4 class="mt-0 badge-success-light d-flex p-10 br-8">Dados da Resolução</h4>
+
+        <div class="d-flex gap-10 flex-wrap mb-20">
+            <div class="form-group flex-1 min-w-200">
+                <label for="resolver_name">Seu Nome (Técnico)</label>
+                <input type="text" id="resolver_name" name="resolver_name" required>
+            </div>
+            <div class="form-group flex-1 min-w-150">
+                <label for="resolver_login">Seu Login</label>
+                <input type="text" id="resolver_login" name="resolver_login" required>
+            </div>
+            <div class="form-group flex-1 min-w-150">
+                <label for="resolver_id">Seu ID (Matrícula)</label>
+                <input type="text" id="resolver_id" name="resolver_id" required>
+            </div>
+        </div>
+
+        <div class="card-accent-blue mb-20">
+            <h5 class="mt-0 text-blue mb-10"><i class="fas fa-microchip"></i>
+                Substituição de Hardware / Toners</h5>
+
+            <div class="d-flex gap-10 flex-wrap">
+                <div class="form-group flex-1 min-w-200">
+                    <label for="stock_items_toner" class="text-small">Toner Trocado (Opcional)</label>
+                    <select name="stock_items" id="stock_items_toner" class="w-100 p-10 br-8">
+                        <option value="">-- Selecione o Toner --</option>
+                        {% for item in toners %}
+                        <option value="{{ item.id }}">{{ item.model }} (Saldo: {{ item.quantity }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group flex-1 min-w-200">
+                    <label for="stock_items_hw" class="text-small">Outro Hardware (Opcional)</label>
+                    <select name="stock_items" id="stock_items_hw" class="w-100 p-10 br-8">
+                        <option value="">-- Selecione Hardware/Periférico --</option>
+                        {% for item in hardware %}
+                        <option value="{{ item.id }}">{{ item.category }}: {{ item.model }} (Saldo: {{ item.quantity }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group mt-15">
+                <label for="counter_number" class="text-blue mb-10 font-bold">Contador Atual da Impressora</label>
+                <input type="number" id="counter_number" name="counter_number" placeholder="Ex: 54321"
+                    class="bg-white border-blue p-10">
+            </div>
+            <small class="text-muted d-block mt-0">Os itens selecionados acima terão <strong>baixa automática</strong>
+                no estoque.</small>
+        </div>
+
+        <div class="form-group relative">
+            <label for="resolution_note">Detalhes da Solução</label>
+            <textarea id="resolution_note" name="resolution_note" rows="4" placeholder="O que foi feito?"></textarea>
+            <button type="button" onclick="getAISuggestion()" class="suggest-btn">
+                <i class="fas fa-magic"></i> Sugestão IA
+            </button>
+        </div>
+
+        <div id="ai-suggestion-box" class="ai-suggestion-box">
+            <strong class="text-blue"><i class="fas fa-robot"></i> MagaBot Sugere:</strong>
+            <p id="ai-suggestion-text" class="mt-10 lh-1-4"></p>
+            <button type="button" onclick="useSuggestion()"
+                class="btn-link text-blue font-bold cursor-pointer p-0 bg-transparent no-border">Usar esta
+                solução</button>
+        </div>
+
+        <script>
+            async function getAISuggestion() {
+                const problem = "{{ ticket.problem_description }}";
+                const asset = "{{ ticket.asset_type }} - {{ ticket.asset_identifier }}";
+                const btn = event.currentTarget.closest('button');
+                const originalText = btn.innerHTML;
+
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analisando...';
+                btn.disabled = true;
+
+                try {
+                    const response = await fetch('/ai_suggest_solution', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ problem, asset })
+                    });
+                    const data = await response.json();
+
+                    document.getElementById('ai-suggestion-text').innerText = data.suggestion;
+                    document.getElementById('ai-suggestion-box').style.display = 'block';
+                } catch (error) {
+                    alert("Erro ao buscar sugestão da IA.");
+                } finally {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
+
+            function useSuggestion() {
+                const suggestion = document.getElementById('ai-suggestion-text').innerText;
+                document.getElementById('resolution_note').value = suggestion;
+            }
+        </script>
+
+        <button type="submit" class="btn-custom btn-green w-100 mt-15">Finalizar e Dar Baixa</button>
+        <a href="{{ url_for('dashboard') }}" class="btn-block text-center mt-15 text-muted no-underline">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

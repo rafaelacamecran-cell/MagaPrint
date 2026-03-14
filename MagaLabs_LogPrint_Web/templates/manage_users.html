@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Controle de Identidade - MagaLabs{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+    <div class="flex justify-between items-center mb-4 slide-up">
+        <div>
+            <h2 class="mb-1"><i class="fas fa-users-gear text-primary"></i> Gestão de Identidades</h2>
+            <p class="text-dim">Controle centralizado de acessos e permissões corporativas</p>
+        </div>
+        <a href="{{ url_for('main.dashboard') }}" class="btn-custom btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="grid-1-2">
+        <!-- Formulário de Criação -->
+        <div class="glass-card slide-up">
+            <h4 class="mb-4"><i class="fas fa-user-plus text-primary"></i> Provisionar Acesso</h4>
+            <form action="{{ url_for('main.manage_users') }}" method="POST">
+                <div class="form-group">
+                    <label for="name">Nome Completo</label>
+                    <input type="text" id="name" name="name" required placeholder="Ex: João Silva">
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="username">Login ADS</label>
+                        <input type="text" id="username" name="username" required placeholder="Ex: jsilva">
+                    </div>
+                    <div class="form-group">
+                        <label for="employee_id">Matrícula</label>
+                        <input type="text" id="employee_id" name="employee_id" required placeholder="Ex: 123456">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="email">E-mail Corporativo</label>
+                    <input type="email" id="email" name="email" required placeholder="contato@magalubs.co">
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha Temporária</label>
+                    <input type="password" id="password" name="password" required placeholder="••••••••">
+                    <p class="text-dim mt-1 small">Troca obrigatória no primeiro login.</p>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="cd">Filial (CD)</label>
+                        <input type="text" id="cd" name="cd" placeholder="CD 100">
+                    </div>
+                    <div class="form-group">
+                        <label for="sector">Setor Operacional</label>
+                        <select name="sector" id="sector">
+                            <option value="Expedição">Expedição</option>
+                            <option value="CTE">CTE</option>
+                            <option value="Recebimento">Recebimento</option>
+                            <option value="SESMT">SESMT</option>
+                            <option value="Patrimonial">Patrimonial</option>
+                            <option value="Faturamento">Faturamento</option>
+                            <option value="TI">TI</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="role">Nível de Autoridade</label>
+                    <select name="role" id="role">
+                        <option value="user">Colaborador (Básico)</option>
+                        <option value="lider">Liderança (Gestor)</option>
+                        <option value="ti">T.I (Administrador)</option>
+                        <option value="superadmin">Super Admin (Nível Total)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-custom w-full">Configurar Novo Acesso</button>
+            </form>
+        </div>
+
+        <!-- Lista de Usuários -->
+        <div class="glass-card slide-up">
+            <h4 class="mb-4">Colaboradores Cadastrados</h4>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Identidade</th>
+                            <th>Nível / E-mail</th>
+                            <th>Local / Setor</th>
+                            <th>Status</th>
+                            <th class="text-right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in users %}
+                        <tr>
+                            <td>
+                                <div class="flex flex-col">
+                                    <span class="text-bright font-bold">{{ u.name }}</span>
+                                    <span class="text-dim small">{{ u.username }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="flex flex-col gap-1">
+                                    <span class="text-dim small">{{ u.email }}</span>
+                                    {% if u.role == 'superadmin' %}
+                                    <span class="status-badge badge-admin">Admin Master</span>
+                                    {% elif u.role == 'ti' %}
+                                    <span class="status-badge badge-ti">Especialista T.I</span>
+                                    {% elif u.role == 'lider' %}
+                                    <span class="status-badge badge-lider">Liderança</span>
+                                    {% else %}
+                                    <span class="status-badge badge-user">Operacional</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="flex flex-col">
+                                    <span class="text-bright">{{ u.cd or '---' }}</span>
+                                    <span class="text-dim small">{{ u.sector or '---' }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                {% if u.first_login %}
+                                <span class="text-warning small f-bold"><i class="fas fa-key"></i> Pendente</span>
+                                {% else %}
+                                <span class="text-success small f-bold"><i class="fas fa-check-circle"></i> Ativo</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-right">
+                                <div class="flex justify-end gap-2">
+                                    <button
+                                        onclick="openEditModal('{{ u.id }}', '{{ u.name }}', '{{ u.username }}', '{{ u.employee_id }}', '{{ u.email }}', '{{ u.role }}', '{{ u.cd }}', '{{ u.sector }}')"
+                                        class="action-icon-btn" title="Editar Colaborador">
+                                        <i class="fas fa-pencil"></i>
+                                    </button>
+                                    <form action="{{ url_for('main.reset_password', id=u.id) }}" method="POST"
+                                        onsubmit="return confirm('Resetar senha para padrão?')">
+                                        <input type="hidden" name="new_password" value="Magazine123">
+                                        <button type="submit" class="action-icon-btn warning" title="Resetar Senha">
+                                            <i class="fas fa-lock-open"></i>
+                                        </button>
+                                    </form>
+                                    <form action="{{ url_for('main.delete_user', id=u.id) }}" method="POST"
+                                        onsubmit="return confirm('Excluir este usuário permanentemente?')">
+                                        <button type="submit" class="action-icon-btn danger" title="Remover Acesso">
+                                            <i class="fas fa-trash-can"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div id="editUserModal" class="modal-backdrop-fixed">
+    <div class="glass-card modal-content-wrapper">
+        <button onclick="closeEditModal()" class="modal-close-btn">&times;</button>
+        <h3 class="mb-4"><i class="fas fa-user-pen text-primary"></i> Atualizar Colaborador</h3>
+        <form id="editUserForm" action="" method="POST">
+            <div class="form-group">
+                <label for="edit_name">Nome Completo</label>
+                <input type="text" id="edit_name" name="name" required>
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="edit_username">Login ADS</label>
+                    <input type="text" id="edit_username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit_employee_id">Matrícula</label>
+                    <input type="text" id="edit_employee_id" name="employee_id" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="edit_email">E-mail Corporativo</label>
+                <input type="email" id="edit_email" name="email" required>
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="edit_cd">Filial (CD)</label>
+                    <input type="text" id="edit_cd" name="cd">
+                </div>
+                <div class="form-group">
+                    <label for="edit_sector">Setor Operacional</label>
+                    <select name="sector" id="edit_sector">
+                        <option value="Expedição">Expedição</option>
+                        <option value="CTE">CTE</option>
+                        <option value="Recebimento">Recebimento</option>
+                        <option value="SESMT">SESMT</option>
+                        <option value="Patrimonial">Patrimonial</option>
+                        <option value="Faturamento">Faturamento</option>
+                        <option value="TI">TI</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="edit_role">Nível de Autoridade</label>
+                <select name="role" id="edit_role">
+                    <option value="user">Colaborador (Básico)</option>
+                    <option value="lider">Liderança (Gestor)</option>
+                    <option value="ti">T.I (Administrador)</option>
+                    <option value="superadmin">Super Admin (Nível Total)</option>
+                </select>
+            </div>
+            <div class="flex gap-2 mt-4">
+                <button type="submit" class="btn-custom w-full">Persistir Alterações</button>
+                <button type="button" onclick="closeEditModal()" class="btn-custom w-full btn-back">Descartar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openEditModal(id, name, username, employee_id, email, role, cd, sector) {
+        const modal = document.getElementById('editUserModal');
+        const form = document.getElementById('editUserForm');
+
+        form.action = '/users/edit/' + id;
+
+        document.getElementById('edit_name').value = name;
+        document.getElementById('edit_username').value = username;
+        document.getElementById('edit_employee_id').value = employee_id;
+        document.getElementById('edit_email').value = email;
+        document.getElementById('edit_role').value = role;
+        document.getElementById('edit_cd').value = cd !== 'None' ? cd : '';
+        document.getElementById('edit_sector').value = sector !== 'None' ? sector : 'Logística';
+
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.style.opacity = '1';
+            modal.style.pointerEvents = 'auto';
+        }, 10);
+    }
+
+    function closeEditModal() {
+        const modal = document.getElementById('editUserModal');
+        modal.style.opacity = '0';
+        modal.style.pointerEvents = 'none';
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
+    }
+
+    window.onclick = function (event) {
+        const modal = document.getElementById('editUserModal');
+        if (event.target == modal) {
+            closeEditModal();
+        }
+    }
+</script>
+{% endblock %}

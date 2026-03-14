@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Registrar Troca de Toner - MagaLabs{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+    <div class="flex justify-between items-center mb-6 slide-up">
+        <div>
+            <h2 class="mb-1"><i class="fas fa-fill-drip text-primary"></i> Registro de Troca de Toner</h2>
+            <p class="text-dim">Preencha os dados técnicos para validar a troca física detectada.</p>
+        </div>
+        <a href="{{ url_for('main.dashboard') }}" class="btn-custom btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="glass-card max-w-2xl mx-auto p-8 slide-up delay-100">
+        <form action="{{ url_for('main.toner_register') }}" method="POST" class="form-grid-1">
+            <!-- Informações do T.I (Auto-preenchidas) -->
+            <div class="form-group mb-6">
+                <label class="block mb-2 text-dim small uppercase font-bold">T.I Responsável</label>
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <input type="text" class="form-control-custom opacity-70" value="{{ current_user.name }}"
+                            readonly title="Nome do TI">
+                    </div>
+                    <div class="w-32">
+                        <input type="text" class="form-control-custom opacity-70" value="{{ current_user.employee_id }}"
+                            readonly title="ID do TI">
+                    </div>
+                </div>
+                <p class="text-dim extra-small mt-1">Identificação automática via sessão corporativa.</p>
+            </div>
+
+            <hr class="border-dim opacity-10 mb-6">
+
+            <!-- Seleção da Impressora -->
+            <div class="form-group mb-4">
+                <label for="printer_ip" class="block mb-2 text-bright font-bold">Impressora Destino <span
+                        class="text-danger">*</span></label>
+                <select id="printer_ip" name="printer_ip" class="form-control-custom" required>
+                    <option value="" disabled {{ 'selected' if not selected_ip }}>Selecione a impressora...</option>
+                    {% for printer in printers %}
+                    <option value="{{ printer.ip }}" data-name="{{ printer.name }}" {{ 'selected' if
+                        selected_ip==printer.ip }}>
+                        {{ printer.name }} ({{ printer.ip }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="grid-1-2 gap-4 mb-4">
+                <div class="form-group">
+                    <label for="printer_model" class="block mb-2 text-bright font-bold">Modelo Impressora</label>
+                    <input type="text" id="printer_model" name="printer_model" class="form-control-custom"
+                        placeholder="Ex: HP LaserJet M506" required>
+                </div>
+                <div class="form-group">
+                    <label for="toner_model" class="block mb-2 text-bright font-bold">Modelo do Toner</label>
+                    <input type="text" id="toner_model" name="toner_model" class="form-control-custom"
+                        placeholder="Ex: CF287A (87A)" required>
+                </div>
+            </div>
+
+            <div class="form-group mb-8">
+                <label for="counter" class="block mb-2 text-bright font-bold">Número do Contador <span
+                        class="text-danger">*</span></label>
+                <div class="flex items-center gap-3">
+                    <input type="number" id="counter" name="counter"
+                        class="form-control-custom text-center font-bold text-xl counter-input" placeholder="000000"
+                        required>
+                    <span class="text-dim small">páginas</span>
+                </div>
+                <p class="text-dim extra-small mt-1">Verifique o contador no painel físico da impressora antes de
+                    finalizar.</p>
+            </div>
+
+            <button type="submit" class="btn-custom btn-logout w-full py-4 text-lg font-bold">
+                <i class="fas fa-check-circle"></i> SALVAR E DAR BAIXA NO SISTEMA
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

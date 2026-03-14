@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acesse sua conta para prosseguir em MagaPrint</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/LabsPrint.png') }}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* Welcome Page Specific layout (as it doesn't extend base) */
+        body,
+        html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .welcome-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .header {
+            width: 100%;
+            padding: 1.5rem;
+            text-align: center;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text-bright);
+            background: rgba(255, 255, 255, 0.8);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .logo-icon {
+            width: 160px;
+            margin-bottom: 2rem;
+            filter: drop-shadow(0 0 20px var(--primary-glow));
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .logo-icon:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .welcome-title {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, var(--text-bright), var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            margin-bottom: 2.5rem;
+            max-width: 500px;
+        }
+
+        .footer-info {
+            width: 100%;
+            padding: 1.5rem;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            border-top: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="header">
+        MagaPrint
+    </header>
+    <div class="gradient-bar"></div>
+
+    <main class="welcome-container fade-in">
+        <img src="{{ url_for('static', filename='img/LabsPrint.png') }}" alt="Logo MagaPrint" class="logo-icon">
+
+        <h1 class="welcome-title">Bem-vindo ao MagaPrint</h1>
+        <p class="welcome-subtitle">Plataforma inteligente para monitoramento e suporte de ativos de impressão
+            LuizaLabs.
+        </p>
+
+        <a href="{{ url_for('login') }}" class="btn-custom btn-welcome">
+            Acessar Sistema <i class="fas fa-arrow-right ml-2"></i>
+        </a>
+    </main>
+
+    <footer class="footer-info">
+        <p>&copy; 2026 MagaPrint. Todos os direitos reservados.</p>
+        <p>CD2650 - Rafaela Camecran</p>
+    </footer>
+</body>
+
+</html>

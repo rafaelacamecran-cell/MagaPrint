@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block title %}Histórico de Atividades - MagaLabs{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+    <div class="flex justify-between items-center mb-4 slide-up">
+        <div>
+            <h2 class="mb-1"><i class="fas fa-history text-primary"></i> Registro de Operações</h2>
+            <p class="text-dim">Log unificado de manutenções, acessos e movimentações</p>
+        </div>
+        <a href="{{ url_for('main.dashboard') }}" class="btn-custom btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <!-- SEÇÃO 1: Chamados Zendesk (Solicitações Gerais) -->
+    <div class="glass-card slide-up mb-4 p-0">
+        <div class="p-4 border-b flex justify-between items-center">
+            <h4 class="mb-0 text-bright"><i class="fas fa-ticket-alt text-primary"></i> Chamados Externos (Zendesk)</h4>
+            <span class="status-badge badge-ti">{{ zendesk_tickets.total }} logs</span>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data Registro</th>
+                        <th>Solicitante / Localização</th>
+                        <th>Ativo Vinculado</th>
+                        <th>Situação</th>
+                        <th class="text-right">Acesso</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in zendesk_tickets.items %}
+                    <tr>
+                        <td><span class="text-dim small">{{ t.created_at.strftime('%d/%m/%Y %H:%M') }}</span></td>
+                        <td>
+                            <div class="flex flex-col">
+                                <span class="text-bright font-bold">{{ t.solicitor_name }}</span>
+                                <span class="text-dim small">{{ t.solicitor_sector }} • {{ t.solicitor_cd }}</span>
+                            </div>
+                        </td>
+                        <td><span class="text-bright">{{ t.asset_type }}</span> <span class="text-dim small">({{
+                                t.asset_identifier }})</span></td>
+                        <td>
+                            {% if t.status == 'Open' %}
+                            <span class="status-badge badge-lider">Aberto</span>
+                            {% else %}
+                            <span class="status-badge status-disponivel">Concluído</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            <a href="{{ t.zendesk_id }}" target="_blank" class="text-primary hover-bright"
+                                title="Persistir no Zendesk">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center p-4 text-dim">Sem chamados registrados na base.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Paginação Zendesk -->
+        {% if zendesk_tickets.pages > 1 %}
+        <div class="pagination-container">
+            {% for p in zendesk_tickets.iter_pages() %}
+            {% if p %}
+            <a href="{{ url_for('main.global_history', page_zendesk=p) }}"
+                class="pagination-link {{ 'active' if p == zendesk_tickets.page }}">{{ p }}</a>
+            {% else %}
+            <span class="pagination-ellipsis">...</span>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- SEÇÃO 2: Chamados Internos (Dispositivos) -->
+    <div class="glass-card slide-up mb-4 p-0">
+        <div class="p-4 border-b">
+            <h4 class="mb-0 text-bright"><i class="fas fa-tools text-primary"></i> Intervenções Locais</h4>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Dispositivo Afetado</th>
+                        <th>Relator</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets.items %}
+                    <tr>
+                        <td><span class="text-dim small">{{ ticket.created_at.strftime('%d/%m/%Y %H:%M') if
+                                ticket.created_at else '---' }}</span></td>
+                        <td><span class="text-bright font-bold">{{ ticket.device.name if ticket.device else 'N/A'
+                                }}</span></td>
+                        <td><span class="text-dim">{{ ticket.reported_by_name }}</span></td>
+                        <td>
+                            {% if ticket.status == 'open' %}
+                            <span class="status-badge badge-lider">Em Curso</span>
+                            {% else %}
+                            <span class="status-badge status-disponivel">Resolvido</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center p-4 text-dim">Sem manutenções locais registradas.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if tickets.pages > 1 %}
+        <div class="pagination-container">
+            {% for p in tickets.iter_pages() %}
+            {% if p %}
+            <a href="{{ url_for('main.global_history', page_support=p) }}"
+                class="pagination-link {{ 'active' if p == tickets.page }}">{{ p }}</a>
+            {% else %}
+            <span class="pagination-ellipsis">...</span>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- SEÇÃO SSO -->
+    <div class="glass-card slide-up mb-4 p-0 card-accent-sso">
+        <div class="p-4 border-b flex justify-between items-center bg-sso-header">
+            <h4 class="mb-0 text-sso"><i class="fas fa-user-shield"></i> Provisionamentos Automáticos
+                (SSO)</h4>
+            <span class="status-badge badge-sso">{{
+                recent_access.total }} novos acessos</span>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data Ingresso</th>
+                        <th>Nome Identificado</th>
+                        <th>E-mail Corporativo</th>
+                        <th>Nível</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in recent_access.items %}
+                    <tr>
+                        <td><span class="text-dim small">{{ u.created_at.strftime('%d/%m/%Y %H:%M') }}</span></td>
+                        <td><span class="text-bright font-bold">{{ u.name }}</span></td>
+                        <td><span class="text-primary">{{ u.email }}</span></td>
+                        <td><span class="status-badge badge-access">Auto-Sync</span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center p-4 text-dim">Sem novos provisionamentos este mês.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if recent_access.pages > 1 %}
+        <div class="pagination-container">
+            {% for p in recent_access.iter_pages() %}
+            {% if p %}
+            <a href="{{ url_for('main.global_history', page_access=p) }}"
+                class="pagination-link {{ 'active' if p == recent_access.page }}">{{ p }}</a>
+            {% else %}
+            <span class="pagination-ellipsis">...</span>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- SEÇÃO TROCA DE TONER -->
+    <div class="glass-card slide-up mb-4 p-0">
+        <div class="p-4 border-b flex justify-between items-center">
+            <h4 class="mb-0 text-bright"><i class="fas fa-fill-drip text-primary"></i> Trocas de Toner e Suprimentos
+            </h4>
+            <span class="status-badge badge-ti">{{ toner_changes.total }} registros</span>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Timeline</th>
+                        <th>Impressora / IP</th>
+                        <th>Modelo Insumo</th>
+                        <th>T.I Responsável</th>
+                        <th>Contador Final</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tc in toner_changes.items %}
+                    <tr>
+                        <td><span class="text-dim small">{{ tc.timestamp.strftime('%d/%m/%Y %H:%M') }}</span></td>
+                        <td>
+                            <div class="flex flex-col">
+                                <span class="text-bright font-bold">{{ tc.printer_name }}</span>
+                                <span class="text-dim extra-small">{{ tc.printer_ip }}</span>
+                            </div>
+                        </td>
+                        <td><span class="text-dim">{{ tc.toner_model }}</span></td>
+                        <td><span class="text-bright font-bold">{{ tc.ti_name }}</span></td>
+                        <td><span class="status-badge status-disponivel">{{ tc.counter_number }} pg</span></td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center p-4 text-dim">Nenhuma troca de toner registrada via
+                            formulário.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if toner_changes.pages > 1 %}
+        <div class="pagination-container">
+            {% for p in toner_changes.iter_pages() %}
+            {% if p %}
+            <a href="{{ url_for('main.global_history', page_toner=p) }}"
+                class="pagination-link {{ 'active' if p == toner_changes.page }}">{{ p }}</a>
+            {% else %}
+            <span class="pagination-ellipsis">...</span>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- SEÇÃO LOGS MOVIMENTAÇÃO -->
+    <div class="glass-card slide-up mb-4 p-0">
+        <div class="p-4 border-b">
+            <h4 class="mb-0 text-bright"><i class="fas fa-exchange-alt text-primary"></i> Movimentação de Ativos Físicos
+            </h4>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Timeline</th>
+                        <th>Equipamento</th>
+                        <th>Operador</th>
+                        <th>Ação Logística</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs.items %}
+                    <tr>
+                        <td><span class="text-dim small">{{ log.timestamp.strftime('%d/%m/%Y %H:%M') }}</span></td>
+                        <td><span class="text-bright font-bold">{{ log.device.name if log.device else 'N/A' }}</span>
+                        </td>
+                        <td><span class="text-dim">{{ log.user_name }}</span></td>
+                        <td>
+                            {% if log.action == 'pickup' %}
+                            <span class="text-primary-bold"><i class="fas fa-arrow-right-from-bracket"></i> Saída</span>
+                            {% else %}
+                            <span class="text-success-bold"><i class="fas fa-arrow-right-to-bracket"></i> Retorno</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center p-4 text-dim">Sem movimentações físicas registradas.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if logs.pages > 1 %}
+        <div class="pagination-container">
+            {% for p in logs.iter_pages() %}
+            {% if p %}
+            <a href="{{ url_for('main.global_history', page_usage=p) }}"
+                class="pagination-link {{ 'active' if p == logs.page }}">{{ p }}</a>
+            {% else %}
+            <span class="pagination-ellipsis">...</span>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

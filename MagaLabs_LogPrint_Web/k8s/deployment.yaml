@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: magalabs-logprint
+  labels:
+    app: magalabs-logprint
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: magalabs-logprint
+  template:
+    metadata:
+      labels:
+        app: magalabs-logprint
+    spec:
+      containers:
+      - name: magalabs-logprint
+        image: magalabs-logprint:latest # Substitua por um repositório real ou use localmente via Minikube/Kind
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
+        env:
+        - name: FLASK_APP
+          value: "app.py"
+        - name: DATABASE_URL
+          value: "postgresql+pg8000://postgres:R%40f%4008049226*%23@host.minikube.internal:5432/MagaLabsLogPrint"
+        - name: SECRET_KEY
+          value: "magalabs_k8s_secret"
+        # Ajuste resources de acordo com a necessidade
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"

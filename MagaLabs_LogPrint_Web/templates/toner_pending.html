@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Pendências de Baixa - MagaLabs{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+    <div class="flex justify-between items-center mb-6 slide-up">
+        <div>
+            <h2 class="mb-1"><i class="fas fa-exclamation-triangle text-warning"></i> Pendências de Registro</h2>
+            <p class="text-dim">Dispositivos onde a troca física foi detectada, mas o formulário técnico não foi
+                preenchido.</p>
+        </div>
+        <a href="{{ url_for('main.dashboard') }}" class="btn-custom btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="glass-card slide-up delay-100 p-0 overflow-hidden">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Impressora</th>
+                        <th>IP / Localização</th>
+                        <th>Detecção da Troca</th>
+                        <th class="text-right">Ação Obrigatória</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dev in pending %}
+                    <tr>
+                        <td><span class="text-bright font-bold">{{ dev.name }}</span></td>
+                        <td><span class="text-dim">{{ dev.ip }}</span></td>
+                        <td><span class="text-dim">{{ dev.last_check.strftime('%d/%m/%Y %H:%M') }}</span></td>
+                        <td class="text-right">
+                            <a href="{{ url_for('main.toner_register', ip=dev.ip) }}"
+                                class="btn-custom btn-logout py-2 px-4 small">
+                                <i class="fas fa-file-pen"></i> DAR BAIXA AGORA
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center p-8 text-dim">
+                            <i class="fas fa-check-circle text-success text-2xl mb-2"></i><br>
+                            Excelente! Nenhuma pendência de baixa detectada no sistema.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

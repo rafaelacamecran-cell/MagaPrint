@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Status Infra - MagaLabs{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+    <div class="flex justify-between items-center mb-6 slide-up">
+        <div>
+            <h2 class="mb-1"><i class="fas fa-network-wired text-primary"></i> Monitoramento de Infraestrutura CDS</h2>
+            <p class="text-dim">Status em tempo real e verificação de conectividade da rede.</p>
+        </div>
+        <div class="flex gap-3 items-center">
+            {% if current_user.role in ['ti', 'superadmin'] %}
+            <form action="{{ url_for('main.infra_check_now') }}" method="POST">
+                <button type="submit" class="btn-custom btn-orange">
+                    <i class="fas fa-sync-alt"></i> Check Agora
+                </button>
+            </form>
+            <a href="{{ url_for('main.manage_infra') }}" class="btn-custom btn-logout">
+                <i class="fas fa-edit"></i> Gerenciar IPs
+            </a>
+            {% endif %}
+            <a href="{{ url_for('main.dashboard') }}" class="btn-custom btn-back">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+
+    <div class="glass-card glass-card-no-padding mt-4 slide-up delay-200">
+        <div class="card-header-gray">
+            <h4 class="m-0">Dispositivos em Monitoramento</h4>
+            <div class="text-small-muted">Frequência: Automática (60s) ou Manual</div>
+        </div>
+
+        <table class="table-responsive">
+            <thead>
+                <tr class="table-header-light">
+                    <th>Dispositivo</th>
+                    <th>Setor / Categoria</th>
+                    <th>Tipo</th>
+                    <th>IP</th>
+                    <th>Status</th>
+                    <th>Último Check</th>
+                    <th>Detalhes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for device in devices %}
+                <tr class="table-row-hover">
+                    <td><strong>{{ device.name }}</strong></td>
+                    <td><span class="text-bright small uppercase">{{ device.category or 'Geral' }}</span></td>
+                    <td><span class="text-muted">{{ device.device_type }}</span></td>
+                    <td><code>{{ device.ip }}</code></td>
+                    <td>
+                        {% if device.status == 'OK' %}
+                        <span class="badge-pill badge-success-light"><i class="fas fa-check-circle"></i> OK</span>
+                        {% elif device.status == 'DOWN' %}
+                        <span class="badge-pill badge-danger-light"><i class="fas fa-times-circle"></i> Down</span>
+                        {% elif device.status == 'OSCILLATING' %}
+                        <span class="badge-pill badge-warning-light"><i class="fas fa-exclamation-triangle"></i>
+                            Oscilando</span>
+                        {% else %}
+                        <span class="badge-pill badge-info-light">Desconhecido</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ device.last_check.strftime('%d/%m %H:%M:%S') }}</td>
+                    <td><small class="text-muted">{{ device.details or '-' }}</small></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="table-empty-message">Nenhum dispositivo sendo monitorado no momento.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

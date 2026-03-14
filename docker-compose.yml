@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: magalabs_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-magalabs_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    container_name: magalabs_web
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql+pg8000://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-magalabs_db}
+      - SECRET_KEY=${SECRET_KEY:-magalabs_secret_key_123}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - MAIL_SERVER=${MAIL_SERVER:-smtp.google.com}
+      - MAIL_PORT=${MAIL_PORT:-587}
+      - MAIL_USE_TLS=${MAIL_USE_TLS:-True}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+    ports:
+      - "80:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./MagaLabs_LogPrint_Web/static/uploads:/app/MagaLabs_LogPrint_Web/static/uploads
+
+  deployer:
+    build: .
+    container_name: magalabs_deployer
+    restart: always
+    # Sobrescrevemos o comando padrão para rodar o Streamlit
+    command: streamlit run "MagaLabs LogPrint.py" --server.port 8501 --server.address 0.0.0.0
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    ports:
+      - "8501:8501"
+    depends_on:
+      - web
+
+  monitoring:
+    build: .
+    container_name: magalabs_monitoring
+    restart: always
+    command: python cds_infra/main.py
+    environment:
+      - DATABASE_URL=postgresql+pg8000://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-magalabs_db}
+      - GCHAT_SOLICITATION_WEBHOOK=${GCHAT_SOLICITATION_WEBHOOK}
+      - GCHAT_LINKS_WEBHOOK=${GCHAT_LINKS_WEBHOOK}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Gerenciar Infra - MagaLabs{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+    <div class="flex justify-between items-center mb-6 slide-up">
+        <div>
+            <h2 class="mb-1"><i class="fas fa-tools text-primary"></i> Gerenciar IPs de Infraestrutura</h2>
+            <p class="text-dim">Adicione ou remova endereços IP para monitoramento automático.</p>
+        </div>
+        <a href="{{ url_for('main.infra_status') }}" class="btn-custom btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="grid-1-2 mt-4">
+        <!-- Form Area -->
+        <div class="glass-card">
+            <h4>Adicionar / Editar Dispositivo</h4>
+            <form action="{{ url_for('main.manage_infra') }}" method="POST">
+                <div class="form-group">
+                    <label>Endereço IP</label>
+                    <input type="text" name="ip" placeholder="Ex: 10.60.226.47" required class="form-control-custom">
+                </div>
+                <div class="form-group">
+                    <label>Nome do Dispositivo</label>
+                    <input type="text" name="name" placeholder="Ex: IMP_EXP_01" required class="form-control-custom">
+                </div>
+                <div class="form-group">
+                    <label for="device_type_select">Tipo</label>
+                    <select id="device_type_select" name="device_type" class="form-control-custom"
+                        title="Selecione o tipo de dispositivo">
+                        <option value="Printer_HP">Impressora HP</option>
+                        <option value="Printer_Zebra">Impressora Zebra</option>
+                        <option value="Link">Links</option>
+                        <option value="PC">Computador</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-custom btn-blue w-100 mt-15">Salvar Dispositivo</button>
+            </form>
+            <div class="mt-20 card-accent-blue">
+                <small><strong>Dica:</strong> Se o IP já existir, o nome e o tipo serão atualizados.</small>
+            </div>
+        </div>
+
+        <!-- List Area -->
+        <div class="glass-card glass-card-no-padding">
+            <div class="card-header-gray">
+                <h4 class="m-0">Lista de Monitoramento</h4>
+            </div>
+            <table class="table-responsive">
+                <thead>
+                    <tr class="table-header-light">
+                        <th>Nome</th>
+                        <th>IP</th>
+                        <th>Status Monitor</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for device in devices %}
+                    <tr class="table-row-hover">
+                        <td><strong>{{ device.name }}</strong></td>
+                        <td><code>{{ device.ip }}</code></td>
+                        <td>
+                            {% if device.is_active %}
+                            <span class="badge-pill badge-success-light">Ativo</span>
+                            {% else %}
+                            <span class="badge-pill badge-danger-light">Pausado</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn-custom btn-outline-gray btn-toggle-device"
+                                data-device-id="{{ device.id }}">
+                                {{ 'Desativar' if device.is_active else 'Ativar' }}
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.btn-toggle-device').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id = this.getAttribute('data-device-id');
+                toggleDevice(id);
+            });
+        });
+    });
+
+    function toggleDevice(id) {
+        fetch(`/infra/toggle/${id}`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) location.reload();
+            });
+    }
+</script>
+{% endblock %}

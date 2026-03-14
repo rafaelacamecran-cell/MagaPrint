@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Solicitar Suporte Elite{% endblock %}
+
+{% block content %}
+<div class="container fade-in container-tight">
+    <div class="mb-4 slide-up">
+        <h2 class="mb-1"><i class="fas fa-headset text-primary"></i> Abertura de Ticket</h2>
+        <p class="text-dim">Protocolo oficial de solicitação de insumos e manutenção</p>
+    </div>
+
+    <form action="{{ url_for('solicitar') }}" method="POST" enctype="multipart/form-data">
+        <div class="glass-card slide-up card-accent-primary">
+            <div class="flex justify-between items-center mb-4">
+                <h4 class="mb-0">Etapa 1: Registro helpdesk</h4>
+                <a href="https://helpdesk.magalu.com.br/hc/pt-br/requests/new?ticket_form_id=360004820674"
+                    target="_blank" rel="noopener" class="btn-custom btn-nav-bot btn-small">
+                    <i class="fas fa-external-link-alt"></i> Abrir no Zendesk
+                </a>
+            </div>
+
+            <div class="form-group">
+                <label for="zendesk_id">URL do Chamado Zendesk (Obrigatório)</label>
+                <input type="url" id="zendesk_id" name="zendesk_id" required
+                    placeholder="Ex: https://helpdesk.magalu.com.br/hc/pt-br/requests/123456">
+                <p class="text-dim mt-1 small"><i class="fas fa-info-circle"></i> O chamado deve ser aberto previamente
+                    no Zendesk corporativo.</p>
+            </div>
+        </div>
+
+        <div class="glass-card slide-up">
+            <h4 class="mb-4">Etapa 2: Detalhes do Hardware</h4>
+
+            <div class="grid-2 mb-4">
+                <div class="form-group">
+                    <label for="solicitor_name_display">Solicitante</label>
+                    <input type="text" id="solicitor_name_display" value="{{ current_user.name }}" readonly
+                        class="readonly-input">
+                </div>
+                <div class="form-group">
+                    <label for="solicitor_cd_display">Unidade (CD)</label>
+                    <input type="text" id="solicitor_cd_display" value="{{ current_user.cd or 'CD2650' }}" readonly
+                        class="readonly-input">
+                </div>
+            </div>
+
+            <div class="form-group mb-4">
+                <label for="asset_type">Categoria da Solicitação</label>
+                <select id="asset_type" name="asset_type" required>
+                    <option value="" disabled selected>Selecione uma categoria...</option>
+                    <option value="Laser_Printer_Toner">Troca de Toner (Impressora HP)</option>
+                    <option value="Laser_Printer_Issue">Problema com Impressora HP</option>
+                    <option value="Computer_Issue">Problemas com Computador</option>
+                    <option value="Peripheral_Issue">Problemas com Periféricos</option>
+                </select>
+            </div>
+
+            <div class="grid-3 mb-4">
+                <div class="form-group">
+                    <label for="printer_model">Modelo do Equipamento</label>
+                    <input type="text" id="printer_model" name="printer_model" required placeholder="Ex: HP M608">
+                </div>
+                <div class="form-group">
+                    <label for="printer_hostname">Hostname (Opcional)</label>
+                    <input type="text" id="printer_hostname" name="printer_hostname" placeholder="Ex: PRT-LOG-01">
+                </div>
+                <div class="form-group">
+                    <label for="printer_ip">Endereço IP</label>
+                    <input type="text" id="printer_ip" name="printer_ip" required placeholder="Ex: 10.60.226.29">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="problem_description">Descrição técnica da falha ou pedido</label>
+                <textarea id="problem_description" name="problem_description" rows="4" required
+                    placeholder="Detalhe brevemente o ocorrido para agilizar o atendimento..."></textarea>
+            </div>
+
+            <div class="flex justify-center gap-4 mt-8">
+                <a href="{{ url_for('welcome') }}" class="btn-custom btn-cancel">
+                    <i class="fas fa-chevron-left"></i> Cancelar
+                </a>
+                <button type="submit" class="btn-custom btn-submit-wide">
+                    Finalizar Protocolo <i class="fas fa-check-double ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

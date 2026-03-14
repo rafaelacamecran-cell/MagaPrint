@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Login Premium{% endblock %}
+
+{% block content %}
+<div class="login-page-container">
+    <div class="glass-card login-glass-card">
+
+        <div class="login-brand-header">
+            <img src="{{ url_for('static', filename='img/LabsPrint.png') }}" alt="MagaPrint" class="login-brand-logo">
+            <h2 class="login-brand-title">MagaPrint Elite</h2>
+            <p class="login-brand-subtitle">Sistema Avançado de Monitoramento</p>
+        </div>
+
+        <form method="POST">
+            <div class="form-group text-left">
+                <label for="username">Usuário Corporativo</label>
+                <input type="text" id="username" name="username" required placeholder="Digite seu login ADS ou E-mail">
+            </div>
+
+            <div class="form-group text-left mb-3">
+                <div class="flex justify-between items-center mb-2">
+                    <label for="password" class="mb-0">Senha</label>
+                    <a href="{{ url_for('forgot_password') }}" class="login-forgot-link">Recuperar Senha</a>
+                </div>
+                <input type="password" id="password" name="password" required placeholder="sua senha"
+                    autocomplete="off">
+            </div>
+
+            <button type="submit" class="btn-custom w-full mt-4 p-3 font-large">
+                Acessar Sistema <i class="fas fa-arrow-right ml-2 small"></i>
+            </button>
+        </form>
+
+        <div class="login-footer-status">
+            <span class="status-dot-text">© 2026 MagaPrint. Todos os direitos reservados.</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
