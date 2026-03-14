@@ -2,7 +2,7 @@
 
 ![MagaPrint Banner](MagaLabs_LogPrint_Web/static/img/LabsPrint.png)
 
-O **MagaPrint** é uma solução centralizada para gestão de ativos de TI, monitoramento de infraestrutura e controle de suprimentos (toners) para os centros de distribuição LuizaLabs.
+O **MagaPrint** é uma solução centralizada para gestão de ativos de TI, monitoramento de infraestrutura e controle de suprimentos (toners) para o centro de distribuição LuizaLabs/ Magalu.
 
 ## 🚀 Principais Recursos
 
