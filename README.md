@@ -1,4 +1,4 @@
-# 🖨️ MagaPrint - Hub de Infraestrutura & Suprimentos
+# 🖨️ MagaPrint - Infraestrutura & Suprimentos
 
 ![MagaPrint Banner](MagaLabs_LogPrint_Web/static/img/LabsPrint.png)
 
