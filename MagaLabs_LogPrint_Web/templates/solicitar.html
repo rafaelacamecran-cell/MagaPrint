@@ -4,9 +4,14 @@
 
 {% block content %}
 <div class="container fade-in container-tight">
-    <div class="mb-4 slide-up">
-        <h2 class="mb-1"><i class="fas fa-headset text-primary"></i> Abertura de Ticket</h2>
-        <p class="text-dim">Protocolo oficial de solicitação de insumos e manutenção</p>
+    <div class="flex justify-between items-center mb-4 slide-up">
+        <div>
+            <h2 class="mb-1"><i class="fas fa-headset text-primary"></i> Abertura de Ticket</h2>
+            <p class="text-dim">Protocolo oficial de solicitação de insumos e manutenção</p>
+        </div>
+        <a href="{{ url_for('welcome') }}" class="btn-custom btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
     </div>
 
     <form action="{{ url_for('solicitar') }}" method="POST" enctype="multipart/form-data">

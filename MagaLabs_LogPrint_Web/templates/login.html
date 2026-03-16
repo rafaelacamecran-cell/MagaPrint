@@ -2,20 +2,25 @@
 
 {% block title %}Login Premium{% endblock %}
 
+{% block navbar %}{% endblock %}
+{% block container_class %}login-full-container{% endblock %}
+
+{% block footer %}{% endblock %}
+
 {% block content %}
 <div class="login-page-container">
     <div class="glass-card login-glass-card">
 
         <div class="login-brand-header">
             <img src="{{ url_for('static', filename='img/LabsPrint.png') }}" alt="MagaPrint" class="login-brand-logo">
-            <h2 class="login-brand-title">MagaPrint Elite</h2>
+            <h2 class="login-brand-title">MagaPrint</h2>
             <p class="login-brand-subtitle">Sistema Avançado de Monitoramento</p>
         </div>
 
         <form method="POST">
             <div class="form-group text-left">
-                <label for="username">Usuário Corporativo</label>
-                <input type="text" id="username" name="username" required placeholder="Digite seu login ADS ou E-mail">
+                <label for="username">Usuário</label>
+                <input type="text" id="username" name="username" required placeholder="Digite seu login">
             </div>
 
             <div class="form-group text-left mb-3">
@@ -23,7 +28,7 @@
                     <label for="password" class="mb-0">Senha</label>
                     <a href="{{ url_for('forgot_password') }}" class="login-forgot-link">Recuperar Senha</a>
                 </div>
-                <input type="password" id="password" name="password" required placeholder="sua senha"
+                <input type="password" id="password" name="password" required placeholder="Digite sua senha"
                     autocomplete="off">
             </div>
 

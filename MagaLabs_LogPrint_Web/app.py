@@ -70,7 +70,7 @@ TOTAL_ASSETS.set_function(collect_assets_total)
 # --- CONFIGURAÇÕES ---
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'magalabs_secret_key_123')
 # Default to local postgres if not provided, but allow override via DATABASE_URL
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql+pg8000://postgres:PASSWORD@localhost:5432/MagaLabsLogPrint')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql+pg8000://postgres:postgres@localhost:5432/magalabs_db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['GEMINI_API_KEY'] = os.environ.get('GEMINI_API_KEY', 'SUA_CHAVE_API_AQUI')
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads')
@@ -210,7 +210,7 @@ def sso_callback():
         return redirect(url_for('login'))
     
     # Restrict to corporate domains ONLY
-    allowed_domains = ['magazineluiza.com.br', 'luizalabs.com']
+    allowed_domains = ['magazineluiza.com.br', 'luizalabs.com', 'magazine.intranet']
     domain = email.split('@')[-1] if '@' in email else ''
     
     if domain not in allowed_domains:
@@ -458,4 +458,4 @@ if __name__ == '__main__':
             db.session.commit()
             print(f"Status do Usuário {u.username} atualizado para Super Admin.")
 
-    app.run(host='0.0.0.0', port=80, debug=True, use_reloader=True)
+    app.run(host='0.0.0.0', port=5001, debug=True, use_reloader=True)

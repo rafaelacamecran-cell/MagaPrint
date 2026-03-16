@@ -16,6 +16,7 @@
 </head>
 
 <body>
+    {% block navbar %}
     <nav class="navbar">
         <a href="{{ url_for('welcome') }}" class="navbar-brand">
             <img src="{{ url_for('static', filename='img/LabsPrint.png') }}" alt="MagaPrint" class="navbar-logo">
@@ -36,7 +37,9 @@
         </div>
     </nav>
     <div class="gradient-bar"></div>
-    <div class="container">
+    {% endblock %}
+
+    <div class="{% block container_class %}container{% endblock %}">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
         {% for category, message in messages %}
@@ -50,9 +53,11 @@
         {% block content %}{% endblock %}
     </div>
 
+    {% block footer %}
     <footer>
         &copy; 2026 MagaPrint. Todos os direitos reservados.
     </footer>
+    {% endblock %}
 </body>
 
 </html>

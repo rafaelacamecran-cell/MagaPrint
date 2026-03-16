@@ -169,11 +169,13 @@ def main():
                     'old_label': db_dev.get('old_label'),
                     'old_ribbon': db_dev.get('old_ribbon')
                 })
-                # Sync file info to DB
-                db_sync.sync_device_config(ip, all_devices[ip]['name'], all_devices[ip]['type'], all_devices[ip]['category'])
             else:
                 # Multi-source: and it's ONLY in DB
                 all_devices[ip] = db_dev
+
+        # Sync all devices from file to DB to ensure they exist
+        for ip, dev in all_devices.items():
+            db_sync.sync_device_config(ip, dev['name'], dev['type'], dev.get('category', 'General'))
         
         print(f"Checking {len(all_devices)} devices...")
         

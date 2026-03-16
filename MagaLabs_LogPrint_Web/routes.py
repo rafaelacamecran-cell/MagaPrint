@@ -1,10 +1,22 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, Response
 from flask_login import login_required, current_user
 from models import db, Device, UsageLog, SupportTicket, User, Ticket, VirtualStock, StockLog, InfraDevice
 from datetime import datetime
 from functools import wraps
 from flask import current_app
-from ai_service import generate_ai_insights, technical_chat
+from ai_service import generate_ai_insights, technical_chat, suggest_solution
+import os
+from werkzeug.utils import secure_filename
+from flask_mail import Mail, Message
+import logging
+from pythonjsonlogger import jsonlogger
+from prometheus_client import Counter, Gauge, generate_latest, CONTENT_TYPE_LATEST
+import requests
+import json
+from dotenv import load_dotenv
+import concurrent.futures
+import platform
+import subprocess
 
 main = Blueprint('main', __name__)
 
@@ -787,31 +799,35 @@ def toggle_infra(id):
 @login_required
 @role_required('ti', 'superadmin')
 def infra_check_now():
-    """Trigger an immediate check (Manual trigger)"""
+    """Trigger an immediate check (Manual trigger) using multithreading for performance"""
     from models import InfraDevice
-    import subprocess
-    import platform
-    from datetime import datetime
     
     devices = InfraDevice.query.filter_by(is_active=True).all()
     param = '-n' if platform.system().lower() == 'windows' else '-c'
     
-    for dev in devices:
-        command = ['ping', param, '1', '-w', '1000', dev.ip]
-        try:
-            subprocess.check_call(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            if dev.status == 'DOWN':
-                # Notify recovery if it was down
-                pass
-            dev.status = 'OK'
-            dev.details = 'Manual check success'
-        except:
-            dev.status = 'DOWN'
-            dev.details = 'Manual check failed'
-        dev.last_check = datetime.now()
+    def check_device(dev_id):
+        # We need to re-query or use a scoped session inside the thread if not careful,
+        # but since we are just updating and committing at the end, and this is a simple check:
+        with current_app.app_context():
+            dev = InfraDevice.query.get(dev_id)
+            command = ['ping', param, '1', '-w', '1000', dev.ip]
+            try:
+                subprocess.check_call(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                dev.status = 'OK'
+                dev.details = 'Manual check success'
+            except:
+                dev.status = 'DOWN'
+                dev.details = 'Manual check failed'
+            dev.last_check = datetime.now()
+            db.session.add(dev)
+            db.session.commit()
+
+    # Use ThreadPoolExecutor to run pings in parallel
+    device_ids = [d.id for d in devices]
+    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+        executor.map(check_device, device_ids)
     
-    db.session.commit()
-    flash('Check manual concluído para todos os dispositivos!', 'success')
+    flash('Check manual concluído para todos os dispositivos em paralelo!', 'success')
     return redirect(url_for('main.infra_status'))
 
 # ============================================================================

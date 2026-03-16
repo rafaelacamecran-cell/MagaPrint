@@ -17,27 +17,37 @@ O **MagaPrint** é uma solução centralizada para gestão de ativos de TI, moni
 
 ## 🛠️ Como Iniciar (Quick Start)
 
-### Usando Docker (Recomendado)
+### Maneira Mais Rápida (Recomendado)
 
-1. Clone o repositório.
-2. Configure o arquivo `.env` (use o `.env.example` como base).
-3. Execute:
+O projeto inclui scripts automatizados para subir a infraestrutura completa no Docker com apenas um clique.
+
+1. Clone ou extraia o repositório.
+2. Dê um duplo-clique no script de configuração adequado ao seu sistema:
+   - **No Windows:** Execute `setup.bat`
+   - **No Linux/Mac:** Execute `sh setup.sh`
+3. O script criará o arquivo `.env` para você. **Edite o `.env` gerado** para adicionar suas chaves de API.
+4. Rode o script novamente para subir o sistema.
+5. Acesse a aplicação em: `http://localhost:5001`
+
+### Usando Docker Manualmente
+
+1. Copie o arquivo `.env.example` para `.env` e configure-o.
+2. Execute:
 
    ```bash
    docker-compose up --build -d
    ```
 
-4. Acesse em: `http://localhost`
+3. Acesse em: `http://localhost:5001`
 
-### Local (Desenvolvimento)
+### Como exportar para o Pendrive (Versão Leve)
 
-1. Crie um ambiente virtual: `python -m venv .venv`
-2. Instale as dependências: `pip install -r requirements.txt`
-3. Configure o banco PostgreSQL.
-4. Rode as tabelas: `python create_tables.py`
-5. Inicie o servidor: `python MagaLabs_LogPrint_Web/app.py`
+Se você precisar copiar o projeto para outro computador ou notebook e quiser ignorar pastas super pesadas (como `.venv` ou `__pycache__`), use os scripts de exportação:
 
----
+- **No Windows:** Execute `.\export_project.ps1` (ou clique com botão direito > "Executar com o PowerShell")
+- **No Linux/Mac:** Execute `./export_project.sh`
+
+Isso irá gerar um arquivo incrivelmente leve chamado `MagaLabs_Project.zip` na raiz do projeto. Basta levar esse ZIP no seu pendrive!
 
 ## 📁 Estrutura do Projeto
 
@@ -54,4 +64,4 @@ O **MagaPrint** é uma solução centralizada para gestão de ativos de TI, moni
 - [Instruções Docker Detalhadas](README_DOCKER.md)
 
 ---
-**Desenvolvido por T.I Rafaela Camecran - Magalu**
+Desenvolvido por **T.I Rafaela Camecran - Magalu**

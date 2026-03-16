@@ -4,9 +4,14 @@
 
 {% block content %}
 <div class="glass-card container-narrow">
-    <h2 class="border-bottom-magalu mb-20">
-        <i class="fas fa-tools"></i> Resolver Chamado #{{ ticket.id }}
-    </h2>
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="border-bottom-magalu mb-0">
+            <i class="fas fa-tools"></i> Resolver Chamado #{{ ticket.id }}
+        </h2>
+        <a href="{{ url_for('main.dashboard') }}" class="btn-custom btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
 
     <div class="info-box-dark">
         <h4 class="mt-0 text-blue">Detalhes da Solicitação</h4>

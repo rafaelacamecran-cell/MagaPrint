@@ -12,6 +12,8 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
+    iputils-ping \
+    telnet \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
@@ -24,8 +26,8 @@ COPY . .
 # Set PYTHONPATH to include the web app directory so internal imports work
 ENV PYTHONPATH=/app/MagaLabs_LogPrint_Web
 
-# Make entrypoint script executable
-RUN chmod +x docker-entrypoint.sh
+# Fix line endings for Windows users and make entrypoint script executable
+RUN sed -i 's/\r$//' docker-entrypoint.sh && chmod +x docker-entrypoint.sh
 
 # Entrypoint setup
 ENTRYPOINT ["./docker-entrypoint.sh"]
@@ -36,4 +38,5 @@ EXPOSE 8501
 
 # Command to run the application
 # Command to run the application (using port 80)
-CMD ["waitress-serve", "--host=0.0.0.0", "--port=80", "--call", "app:app"]
+# We remove --call because 'app' is a Flask instance variable, not a factory function.
+CMD ["waitress-serve", "--host=0.0.0.0", "--port=80", "app:app"]

@@ -5,9 +5,14 @@
 {% block content %}
 <div class="container fade-in">
     <!-- Seção 1: Introdução -->
-    <div class="dashboard-intro slide-up">
-        <h2 class="mb-1"><i class="fas fa-microchip text-primary"></i> Suporte Infra Cds</h2>
-        <p class="text-dim">Gestão centralizada de hardware, dispositivos e ativos tecnológicos LuizaLabs.</p>
+    <div class="dashboard-intro slide-up flex justify-between items-center">
+        <div>
+            <h2 class="mb-1"><i class="fas fa-microchip text-primary"></i> Suporte Infra Cds</h2>
+            <p class="text-dim">Gestão centralizada de hardware, dispositivos e ativos tecnológicos LuizaLabs.</p>
+        </div>
+        <a href="{{ url_for('welcome') }}" class="btn-custom btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
     </div>
 
     <!-- Alerta de Pendências de Toner -->

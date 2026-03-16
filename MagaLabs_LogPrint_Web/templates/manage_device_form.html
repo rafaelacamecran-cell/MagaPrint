@@ -4,9 +4,14 @@
 
 {% block content %}
 <div class="glass-card manage-device-card">
-    <h2 class="form-title">
-        <i class="fas fa-desktop"></i> {{ 'Editar' if device else 'Cadastrar Novo' }} Dispositivo
-    </h2>
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="form-title mb-0">
+            <i class="fas fa-desktop"></i> {{ 'Editar' if device else 'Cadastrar Novo' }} Dispositivo
+        </h2>
+        <a href="{{ url_for('main.manage_devices_page') }}" class="btn-custom btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
 
     <form method="POST">
         <div class="form-group">
